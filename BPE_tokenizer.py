@@ -1,15 +1,15 @@
 
-
+# Count the frequency of consecutive pairs
+# the input tok_ids is a list containing the byte(text.encode("utf-8"))
 def get_counts(tok_ids):
-  # count the frequency of consecutive pairs
   counts = {}
   for pair in zip(tok_ids, tok_ids[1:]):
     counts[pair] = counts.get(pair,0) + 1
   return counts
 
-
+# Substitute the token ids with the merged pair
 def merge(tok_ids, merge_pair, new_id_merged):
-  newids = [] #substituting the token ids
+  newids = []
   i=0
   while i < len(tok_ids):
     if i < len(tok_ids)-1 and tok_ids[i]==merge_pair[0] and tok_ids[i+1]==merge_pair[1]:
@@ -20,7 +20,7 @@ def merge(tok_ids, merge_pair, new_id_merged):
       i += 1
   return newids
 
-# Tokenizer class of GPT
+# BPE Tokenizer used by GPT model
 class BasicTokenizer:
 
   def __init__(self):
@@ -48,7 +48,7 @@ class BasicTokenizer:
     self.merges = merges
     self.vocab = vocab
 
-
+  # encode the raw text --> calculate the frequency of bytes --> merge the most frequently pairs
   def encode(self, text):
     # convert a text into a list of integers
     tokens = list(text.encode("utf-8"))
