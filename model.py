@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+# Use our own coded BPE tokenizer
 from BPE_tokenizer import BasicTokenizer
 
 """
@@ -14,7 +15,7 @@ with open("input.txt","r",encoding="utf-8") as f:
 text = text[:int(0.1*len(text))]
 print(f"The length of text in characters is {len(text)}")
 
-#Train the BPE tokenizer on the text
+# Train the BPE tokenizer on the text
 tokenizer = BasicTokenizer()
 tokenizer.train(text=text, vocab_size=512)
 
@@ -26,7 +27,9 @@ n = int(0.9*len(data))
 train_data = data[:n]
 val_data = data[n:]
 
-#------------------------------------------------------#
+"""
+Define sevaral useful functions -----------------------------
+"""
 
 torch.manual_seed(1337)
 batch_size = 32
@@ -55,7 +58,7 @@ def estimate_loss():
   return out
 
 """
-Classes used in GPT model ---------------------------------------
+Classes in the GPT2 model architecture -------------------------------------
 """
 
 class LayerNorm(nn.Module):
@@ -69,6 +72,7 @@ class LayerNorm(nn.Module):
     def forward(self, input):
         return F.layer_norm(input, self.weight.shape, self.weight, self.bias, 1e-5)
 
+# Multi-head self-attention mechanism
 class CausalSelfAttention(nn.Module):
 
     def __init__(self, config):
@@ -118,6 +122,7 @@ class CausalSelfAttention(nn.Module):
         y = self.resid_dropout(self.c_proj(y))
         return y
 
+# Multi-head linear perception
 class MLP(nn.Module):
 
     def __init__(self, config):
@@ -134,6 +139,7 @@ class MLP(nn.Module):
         x = self.dropout(x)
         return x
 
+# GPT2 architecture
 class Block(nn.Module):
 
     def __init__(self, config):
@@ -149,12 +155,12 @@ class Block(nn.Module):
         return x
 
 """
-Main Model --------------------------------------------
+Initialization --------------------------------------------
 """
 class GPTConfig:
   block_size: int = 512
   vocab_size: int = 512  # GPT-2 vocab_size of 50257, padded up to nearest multiple of 64 for efficiency
-  n_layer: int = 6
+  n_layer: int = 6 # number of transformer blocks
   n_head: int = 12
   n_embd: int = 384
   dropout: float = 0.1
@@ -279,6 +285,6 @@ for iter in range(max_iters):
   loss.backward()
   optimizer.step()
 
-#generate the text
+# generate the text
 context = torch.zeros((1,1), dtype=torch.long)
 print(tokenizer.decode(model.generate(context, max_new_tokens=500)[0].tolist()))
